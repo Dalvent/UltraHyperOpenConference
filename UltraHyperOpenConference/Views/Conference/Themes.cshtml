@@ -1,0 +1,17 @@
+﻿@model System.Collections.Generic.List<UltraHyperOpenConference.Model.Theme>
+
+@{
+    ViewData["Title"] = "Themes";
+}
+
+<ul class="list-group">
+    @foreach (var theme in Model)
+    {
+        <li class="list-group-item"><a asp-controller="Conference" asp-action="ThemeChat" asp-route-themeId="@theme.Id">@theme.Name</a></li>
+    }
+    
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <li class="list-group-item"><a asp-controller="Conference" asp-action="CreateTheme">+ Create new theme</a></li>
+    }
+</ul>

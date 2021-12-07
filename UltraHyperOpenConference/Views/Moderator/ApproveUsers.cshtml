@@ -1,0 +1,28 @@
+﻿@model IEnumerable<User>
+
+@{
+    ViewData["Title"] = "Users to approve";
+}
+
+<h2>@ViewData["Title"]</h2>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Id</td>
+            <td>@user.Name</td>
+            <td>
+                <a asp-controller="Moderator" asp-action="ApproveUser" asp-route-id="@user.Id" >Approve</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
