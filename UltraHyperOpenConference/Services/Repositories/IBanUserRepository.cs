@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using UltraHyperOpenConference.Model;
 
 namespace UltraHyperOpenConference.Services.Repositories
 {
     public interface IBanUserRepository : IRepository<BanUser>
     {
-        Task<int> GetRemainingBanTime(int userId);
+        Task<TimeSpan> GetRemainingBanSeconds(int userId);
         Task<bool> IsUserBanned(int userId);
+        Task<BanUser> GetLastRemainingBan(int userId);
     }
 }

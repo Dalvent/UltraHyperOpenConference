@@ -4,9 +4,17 @@
     ViewData["Title"] = "Themes";
 }
 
+<form>
+    <input type="text" name="keyword">
+    <button type="submit" asp-action="SearchByKeyword">Send</button>
+</form>
+
 <ul class="list-group">
     @foreach (var theme in Model)
     {
+        if(theme.IsArchived)
+            continue;
+        
         <li class="list-group-item"><a asp-controller="Conference" asp-action="ThemeChat" asp-route-themeId="@theme.Id">@theme.Name</a></li>
     }
     

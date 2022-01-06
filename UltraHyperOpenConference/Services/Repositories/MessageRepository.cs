@@ -18,7 +18,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return await DbSet
                 .Where(item => item.Id == id)
-                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .SelectMessageWithUserNames()
                 .FirstOrDefaultAsync();
         }
 
@@ -26,7 +26,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return await DbSet
                 .Where(message => message.ThemeId == themeId)
-                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .SelectMessageWithUserNames()
                 .ToListAsync();
         }
 
@@ -34,7 +34,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return DbSet
                 .Where(item => item.UserAuthorId == userId)
-                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .SelectMessageWithUserNames()
                 .ToListAsync();
         }
 
@@ -42,7 +42,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return DbSet
                 .Where(item => item.Text.Contains(value) && !item.IsDeleted)
-                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .SelectMessageWithUserNames()
                 .ToListAsync();
         }
 
@@ -50,13 +50,30 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return DbSet
                 .Where(item => item.ParentMessageId == messageId)
-                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .SelectMessageWithUserNames()
+                .ToListAsync();
+        }
+
+        public Task<List<MessageWithUserName>> GetByKeyword(string keyword)
+        {
+            return DbSet
+                .Where(item => item.UserAuthor.Name.Contains(keyword) || item.Text.Contains(keyword))
+                .SelectMessageWithUserNames()
                 .ToListAsync();
         }
 
         public override Task<Message> GetByIdAsync(int id)
         {
             return DbSet.FirstOrDefaultAsync(item => item.Id == id);
+        }
+    }
+    
+    internal static class QueryableExtensions
+    {
+        public static IQueryable<MessageWithUserName> SelectMessageWithUserNames(this IQueryable<Message> messageQueryable)
+        {
+            return messageQueryable
+                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message, message.UserAuthor.BanUserCapabilityUsers.Any(ban => !ban.IsArchived && ban.CreationDate.AddSeconds(ban.DurationInSeconds) > DateTime.Now)));
         }
     }
 }

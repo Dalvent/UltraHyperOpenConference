@@ -12,5 +12,6 @@ namespace UltraHyperOpenConference.Services.Repositories
         Task<List<MessageWithUserName>> GetAllByUserAsync(int userId);
         Task<List<MessageWithUserName>> FindInTextAsync(string value);
         Task<List<MessageWithUserName>> GetAnswersAsync(int messageId);
+        Task<List<MessageWithUserName>> GetByKeyword(string keyword);
     }
 }

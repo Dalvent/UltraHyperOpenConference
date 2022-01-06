@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UltraHyperOpenConference.Model;
 
 namespace UltraHyperOpenConference.ViewModels
@@ -9,7 +10,7 @@ namespace UltraHyperOpenConference.ViewModels
         public ThemeMessageTreeLeaf Chats { get; }
         public int CurrentUserId { get; }
         public bool IsUserBanned { get; set; }
-        public int UserBanTime { get; set; }
+        public TimeSpan UserBanTime { get; set; }
 
         public ThemeChatViewModel(Theme theme, ThemeMessageTreeLeaf chats, int currentUserId)
         {

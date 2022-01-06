@@ -1,0 +1,41 @@
+﻿@using System.Globalization
+@using UltraHyperOpenConference.Extensions
+@using UltraHyperOpenConference.Extensions
+@model System.Collections.Generic.List<UltraHyperOpenConference.Services.Repositories.UserBanInfo>
+
+@{
+    ViewData["Title"] = "Ban";
+}
+
+<h2>@ViewData["Title"]</h2>
+@foreach (var userBanInfo in Model)
+{
+    <h2>@userBanInfo.User.Name</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>CreationDate</th>
+            <th>Reason</th>
+            <th>DurationInSeconds</th>
+            <th>Unban date time</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var ban in userBanInfo.Bans)
+        {
+            <tr>
+                <td>@ban.Id</td>
+                <td>@ban.CreationDate</td>
+                <td>@ban.Reason</td>
+                <td>@ban.DurationInSeconds</td>
+                <td>@ban.GetUnbanTime().ToString("G", CultureInfo.InvariantCulture)</td> 
+                <td>
+                    <a asp-controller="Moderator" asp-action="UnbanUser" asp-route-banId="@ban.Id">Remove</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

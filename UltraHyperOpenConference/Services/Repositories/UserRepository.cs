@@ -27,6 +27,13 @@ namespace UltraHyperOpenConference.Services.Repositories
             return await DbSet.Where(item => !item.IsActive).ToListAsync();
         }
 
+        public async Task<List<UserBanInfo>> GetUserBans()
+        {
+            return await DbSet.Where(item => item.BanUserCapabilityUsers.Any(item => !item.IsArchived))
+                .Select(item => new UserBanInfo(item, item.BanUserCapabilityUsers.Where(item => !item.IsArchived).ToList()))
+                .ToListAsync();
+        }
+
         public override Task<User> GetByIdAsync(int id)
         {
             return DbSet.FirstOrDefaultAsync(item => item.Id == id);

@@ -1,12 +1,7 @@
-﻿@using UltraHyperOpenConference.Controllers
-@using UltraHyperOpenConference.ViewModels
-@using Microsoft.AspNetCore.Html
-@using UltraHyperOpenConference
-@using UltraHyperOpenConference.Model
-@model UltraHyperOpenConference.ViewModels.MessageDetailViewModel
+﻿@model UltraHyperOpenConference.ViewModels.SearchMessageByKeyword
 
 @{
-    ViewData["Title"] = $"Message - {Model.Message.Message.Id}";
+    ViewData["Title"] = $"Message - {Model.Keyword}";
 }
 
 @{
@@ -90,35 +85,11 @@
                    </text>;
 }
 
-<h2>Message:</h2>
-@ShowMessage((@Model.Message, true))
-
-<a asp-controller="Conference" asp-action="ThemeChat" asp-route-themeId="@Model.Message.Message.ThemeId">Open theme of message</a>
-
-@if (Model.ParentMessage != null)
+@foreach (var message in Model.Result)
 {
-    <h4>Answer to:</h4>
-    @ShowMessage((@Model.ParentMessage, false))
-    <hr>
-}
-else
-{
-    <div>Root of theme</div>
-}
-
-@if (Model.Answers == null || Model.Answers.Count == 0 || Model.Answers.All(item => item.Message.IsDeleted))
-{
-    <div>No answers</div>
-}
-else
-{
-    <h4>Answers:</h4>
-    foreach (var message in Model.Answers)
+    if (!message.Message.IsDeleted)
     {
-        if (!message.Message.IsDeleted)
-        {
-            @ShowMessage((message, false))
-        }
+        @ShowMessage((message, true))
     }
 }
 
@@ -148,8 +119,8 @@ else
                     </div>
                     <div class="modal-footer">
                         <input type="hidden" name="userId" id="input-user-ban-id"/>
-                        <input type="hidden" name="redirectThemeId" value="@Model.Message.Message.ThemeId"/>
-                        <button asp-controller="Conference" asp-action="BanUser" type="submit" class="btn btn-primary">Ban</button>
+                        <input type="hidden" name="keyword" value="@Model.Keyword"/>
+                        <button asp-controller="Conference" asp-action="BanUserFromSearch" type="submit" class="btn btn-primary">Ban</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>

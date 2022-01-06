@@ -1,21 +1,12 @@
-﻿@using UltraHyperOpenConference.Controllers
-@using UltraHyperOpenConference.ViewModels
-@using Microsoft.AspNetCore.Html
-@using UltraHyperOpenConference
-@using UltraHyperOpenConference.Model
-@model UltraHyperOpenConference.ViewModels.MessageDetailViewModel
+﻿@using UltraHyperOpenConference.Extensions
+@model UltraHyperOpenConference.ViewModels.UserDetailViewModel
 
 @{
-    ViewData["Title"] = $"Message - {Model.Message.Message.Id}";
+    ViewData["Title"] = $"Message - {Model.User.Name}";
 }
 
 @{
     Func<(MessageWithUserName, bool), IHtmlContent> ShowMessage = null;
-}
-
-@section Scripts
-{
-    <script src="~/js/comment-page.js" asp-append-version="true"></script>
 }
 
 @{
@@ -89,38 +80,32 @@
                       }
                    </text>;
 }
-
-<h2>Message:</h2>
-@ShowMessage((@Model.Message, true))
-
-<a asp-controller="Conference" asp-action="ThemeChat" asp-route-themeId="@Model.Message.Message.ThemeId">Open theme of message</a>
-
-@if (Model.ParentMessage != null)
-{
-    <h4>Answer to:</h4>
-    @ShowMessage((@Model.ParentMessage, false))
-    <hr>
-}
-else
-{
-    <div>Root of theme</div>
-}
-
-@if (Model.Answers == null || Model.Answers.Count == 0 || Model.Answers.All(item => item.Message.IsDeleted))
-{
-    <div>No answers</div>
-}
-else
-{
-    <h4>Answers:</h4>
-    foreach (var message in Model.Answers)
+<ul>
+    <li>Id - @Model.User.Id</li>
+    <li>Name - @Model.User.Name</li>
+    @if (!Model.User.IsActive)
     {
-        if (!message.Message.IsDeleted)
-        {
-            @ShowMessage((message, false))
-        }
+        <li>Not Approved</li>
+    }
+    @if (Model.User.IsModer)
+    {
+        <li>Moderator</li>
+    }
+    @if (Model.IsBanned)
+    {
+        <li class="text-danger">Unban in - @Model.LastBan.GetUnbanTime().ToString("G")</li>
+    }
+</ul>
+
+<h4>All messages:</h4>
+@foreach (var message in Model.Messages)
+{
+    if (!message.Message.IsDeleted)
+    {
+        @ShowMessage((message, true))
     }
 }
+
 
 @if (User.IsInRole(Constants.ModerRole))
 {
@@ -148,8 +133,7 @@ else
                     </div>
                     <div class="modal-footer">
                         <input type="hidden" name="userId" id="input-user-ban-id"/>
-                        <input type="hidden" name="redirectThemeId" value="@Model.Message.Message.ThemeId"/>
-                        <button asp-controller="Conference" asp-action="BanUser" type="submit" class="btn btn-primary">Ban</button>
+                        <button asp-controller="User" asp-action="BanUser" type="submit" class="btn btn-primary">Ban</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>

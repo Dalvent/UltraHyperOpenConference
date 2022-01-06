@@ -1,6 +1,7 @@
 ﻿@using UltraHyperOpenConference.Controllers
 @using UltraHyperOpenConference.ViewModels
 @using Microsoft.AspNetCore.Html
+@using System.Globalization
 @model UltraHyperOpenConference.ViewModels.ThemeChatViewModel
 
 @{
@@ -34,7 +35,7 @@
                                 <p class="mb-0 text-semibold media-heading box-inline">
                                     @if (!messageLeaf.MessageWithAuthorName.Message.IsDeleted)
                                     {
-                                        <b>@messageLeaf.MessageWithAuthorName.UserName</b>
+                                        <a asp-controller="User" asp-action="Index" asp-route-userId="@messageLeaf.MessageWithAuthorName.Message.UserAuthorId"><b>@messageLeaf.MessageWithAuthorName.UserName</b></a>
                                     }
                                     else
                                     {
@@ -86,7 +87,7 @@
 
                         @if (!messageLeaf.MessageWithAuthorName.Message.IsDeleted)
                         {
-                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned)
+                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned && !Model.Theme.IsArchived)
                             {
                                 <div class="pad-ver">
                                     <a class="replay-message-button btn btn-primary btn-hover-primary" href="#">Comment</a>
@@ -97,10 +98,17 @@
                                         <div class="moder-block float-right">
                                             <form asp-action="RemoveMessage">
                                                 <input hidden="hidden" name="messageId" value="@messageLeaf.MessageWithAuthorName.Message.Id"/>
+                                                @if (messageLeaf.MessageWithAuthorName.IsBanned)
+                                                {
+                                                    <span class="text-danger">User is banned</span>
+                                                }
                                                 <button type="submit" class="btn btn-danger btn-hover-primary" href="#">
                                                     Remove
                                                 </button>
-                                                <button type="button" class="ban-user-button btn btn-danger btn-hover-primary" href="#">Ban Author</button>
+                                                @if (!messageLeaf.MessageWithAuthorName.IsBanned)
+                                                {
+                                                    <button type="button" class="ban-user-button btn btn-danger btn-hover-primary" href="#">Ban Author</button>
+                                                }
                                             </form>
                                             <input type="hidden" class="comment-user-id" value="@messageLeaf.MessageWithAuthorName.Message.UserAuthorId"/>
                                         </div>
@@ -109,7 +117,7 @@
                             }
 
                             <hr>
-                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned)
+                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned && !Model.Theme.IsArchived)
                             {
                                 <div class="display-none comment-block margin-bottom-md col-md-12 m bootstrap snippets">
                                     <div class="panel">
@@ -162,7 +170,19 @@
 
 @if (Model.IsUserBanned)
 {
-    <p class="text-danger">SIT IN BAN FOR ANOTHER @Model.UserBanTime HOURS</p>
+    <p class="text-danger">You are excluded until @DateTime.Now.AddTicks(Model.UserBanTime.Ticks).ToString("G", CultureInfo.InvariantCulture)</p>
+}
+
+@if (!Model.Theme.IsArchived)
+{
+@if (User.IsInRole(Constants.ModerRole) && !Model.IsUserBanned)
+{
+    <a asp-action="ArchiveTheme" asp-route-themeId="@Model.Theme.Id" class="btn btn-danger m-2 p-2">Archive Theme</a>
+}
+}
+else
+{
+    <p class="text-black-50">Theme was archived!</p>
 }
 
 
@@ -179,7 +199,7 @@
 
 @if (User.IsInRole(Constants.ModerRole))
 {
-    <form>
+    <form method="POST">
         <div id="banModal" class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -190,8 +210,14 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Hours to ban</p>
-                        <input type="number" name="banTime"/>
+                        <p>Days</p>
+                        <input type="numer" name="banTimeDays"/>
+                        <p>Hours</p>
+                        <input type="numer" name="banTimeHours"/>
+                        <p>Minutes</p>
+                        <input type="numer" name="banTimeMinutes"/>
+                        <p>Seconds</p>
+                        <input type="numer" name="banTimeSeconds"/>
                         <p>Reason</p>
                         <input type="text" name="reasonText"/>
                     </div>

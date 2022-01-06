@@ -24,9 +24,8 @@
                     </li>
                     @if (User.IsInRole(Constants.ModerRole))
                     {
-                        <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Moderator" asp-action="ApproveUsers">ApproveUsers</a>
-                    </li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Moderator" asp-action="ApproveUsers">ApproveUsers</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Moderator" asp-action="UserBans">User bans</a></li>
                     }
                 </ul>
 

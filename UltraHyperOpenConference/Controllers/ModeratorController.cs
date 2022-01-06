@@ -12,18 +12,27 @@ namespace UltraHyperOpenConference.Controllers
     public class ModeratorController : Controller
     {
         private readonly IModerationService _moderationService;
+        private readonly IBanUserRepository _banRepository;
         private readonly IUserRepository _userRepository;
 
-        public ModeratorController(IModerationService moderationService, IUserRepository userRepository)
+        public ModeratorController(IModerationService moderationService, IUserRepository userRepository, IBanUserRepository banRepository)
         {
             _moderationService = moderationService;
             _userRepository = userRepository;
+            _banRepository = banRepository;
         }
         
         [Authorize(Roles = Constants.ModerRole)]
         public async Task<IActionResult> ApproveUsers()
         {
             List<User> nonApprovedUsers = await _userRepository.GetNonApprovedUsers();
+            return View(nonApprovedUsers);
+        }
+        
+        [Authorize(Roles = Constants.ModerRole)]
+        public async Task<IActionResult> UserBans()
+        {
+            List<UserBanInfo> nonApprovedUsers = await _userRepository.GetUserBans();
             return View(nonApprovedUsers);
         }
 
@@ -33,6 +42,12 @@ namespace UltraHyperOpenConference.Controllers
         {
             await _moderationService.ApproveUserAsync(id);
             return Redirect($"../{nameof(ApproveUsers)}");
+        }
+
+        public async Task<IActionResult> UnbanUser(int banId)
+        {
+            await _moderationService.Unban(banId);
+            return Redirect($"UserBans");
         }
     }
 }

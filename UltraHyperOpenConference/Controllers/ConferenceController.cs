@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -61,11 +62,11 @@ namespace UltraHyperOpenConference.Controllers
             Theme theme = await _themeRepository.GetByIdAsync(themeId);
             ThemeMessageTreeLeaf root = await _themeMessageTreeService.GetTreeAsync(themeId);
 
-            int userBanTime = await _banUserRepository.GetRemainingBanTime(_currentUserService.GetId());
+            var userBanTime = await _banUserRepository.GetRemainingBanSeconds(_currentUserService.GetId());
             
             return View(new ThemeChatViewModel(theme, root, _currentUserService.GetId())
             {
-                IsUserBanned = userBanTime > 0,
+                IsUserBanned = userBanTime != TimeSpan.Zero,
                 UserBanTime = userBanTime
             });
         }
@@ -88,10 +89,37 @@ namespace UltraHyperOpenConference.Controllers
         }
 
         [Authorize(Roles = Constants.ModerRole)]
-        public IActionResult BanUser(int userId, int banTime, string reasonText, int redirectThemeId)
+        [HttpPost]
+        public IActionResult BanUserFromSearch(int userId, int banTimeDays, int banTimeHours, int banTimeMinutes, int banTimeSeconds, string reasonText, string keyword)
         {
-            _moderationService.BanUserAsync(userId, banTime, reasonText);
+            int totalBanSeconds = (int)new TimeSpan(banTimeDays, banTimeHours, banTimeMinutes, banTimeSeconds).TotalSeconds;
+            _moderationService.BanUserAsync(userId, totalBanSeconds, reasonText);
+            return Redirect($"~/Conference/SearchByKeyword?keyword={System.Net.WebUtility.UrlEncode(keyword)}");
+        }
+        
+        [Authorize(Roles = Constants.ModerRole)]
+        [HttpPost]
+        public IActionResult BanUser(int userId, int banTimeDays, int banTimeHours, int banTimeMinutes, int banTimeSeconds, string reasonText, int redirectThemeId)
+        {
+            int totalBanSeconds = (int)new TimeSpan(banTimeDays, banTimeHours, banTimeMinutes, banTimeSeconds).TotalSeconds;
+            _moderationService.BanUserAsync(userId, totalBanSeconds, reasonText);
             return Redirect($"~/Conference/ThemeChat?themeId={redirectThemeId}");
+        }
+        
+        [Authorize(Roles = Constants.ModerRole)]
+        public async Task<IActionResult> ArchiveTheme(int themeId)
+        {
+            var theme = await _themeRepository.GetByIdAsync(themeId);
+            theme.IsArchived = true;
+            await _themeRepository.UpdateAsync(theme);
+            
+            return Redirect("~/Conference/Themes");
+        }
+
+        public async Task<IActionResult> SearchByKeyword(string keyword)
+        {
+            var messages = await _messageRepository.GetByKeyword(keyword) ?? new List<MessageWithUserName>();
+            return View(new SearchMessageByKeyword() { Keyword = keyword, Result = messages});
         }
     }
 }

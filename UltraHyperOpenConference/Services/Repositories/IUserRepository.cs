@@ -6,8 +6,10 @@ namespace UltraHyperOpenConference.Services.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
-        public Task<User> GetAsync(string name);
-        public Task<User> GetAsync(string name, string password);
-        public Task<List<User>> GetNonApprovedUsers();
+        Task<User> GetAsync(string name);
+        Task<User> GetAsync(string name, string password);
+        Task<List<User>> GetNonApprovedUsers();
+
+        Task<List<UserBanInfo>> GetUserBans();
     }
 }

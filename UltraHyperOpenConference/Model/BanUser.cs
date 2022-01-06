@@ -12,7 +12,8 @@ namespace UltraHyperOpenConference.Model
         public int ModeratorId { get; set; }
         public string Reason { get; set; }
         public DateTime CreationDate { get; set; }
-        public int Duration { get; set; }
+        public long DurationInSeconds { get; set; }
+        public bool IsArchived { get; set; }
 
         public virtual User Moderator { get; set; }
         public virtual User User { get; set; }

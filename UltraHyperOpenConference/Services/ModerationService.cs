@@ -35,20 +35,27 @@ namespace UltraHyperOpenConference.Services
             await _userRepository.UpdateAsync(user);
         }
 
-        public async Task BanUserAsync(int userId, int hours, string reason)
+        public async Task BanUserAsync(int userId, long totalSeconds, string reason)
         {
             ThrowIfNotModer();
 
             var ban = new BanUser()
             {
                 CreationDate = DateTime.Now,
-                Duration = hours,
+                DurationInSeconds = totalSeconds,
                 ModeratorId = _currentUserService.GetId(),
                 Reason = reason,
                 UserId = userId
             };
             
             await _banUserRepository.InsertAsync(ban);
+        }
+
+        public async Task Unban(int banId)
+        {
+            BanUser ban = await _banUserRepository.GetByIdAsync(banId);
+            ban.IsArchived = true;
+            await _banUserRepository.UpdateAsync(ban);
         }
 
         public async Task<Message> DeleteMessageAsync(int messageId)
