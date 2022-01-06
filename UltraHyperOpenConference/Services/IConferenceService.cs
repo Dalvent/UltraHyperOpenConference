@@ -7,6 +7,6 @@ namespace UltraHyperOpenConference.Services
     public interface IConferenceService
     {
         Task<Theme> StartThemeAsync(string name, string startMessage);
-        Task AnswerToAsync(int parentMessageId, string answer);
+        Task<Message> AnswerToAsync(int parentMessageId, string answer);
     }
 }

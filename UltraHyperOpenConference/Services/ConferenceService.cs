@@ -27,10 +27,10 @@ namespace UltraHyperOpenConference.Services
             return theme;
         }
 
-        public async Task AnswerToAsync(int parentMessageId, string answer)
+        public async Task<Message> AnswerToAsync(int parentMessageId, string answer)
         {
             Theme theme = await _themeRepository.GetThemeOfMessage(parentMessageId);
-            await InsertNewMessage(theme.Id, answer, parentMessageId);
+            return await InsertNewMessage(theme.Id, answer, parentMessageId);
         }
 
         private async Task<Theme> InsertNewTheme(string name)
@@ -40,7 +40,7 @@ namespace UltraHyperOpenConference.Services
             return await _themeRepository.GetThemeFromName(name);
         }
 
-        private async Task InsertNewMessage(int themeId, string text, int? parentMessageId = null)
+        private async Task<Message> InsertNewMessage(int themeId, string text, int? parentMessageId = null)
         {
             Message message = new()
             {
@@ -51,6 +51,7 @@ namespace UltraHyperOpenConference.Services
                 Text = text
             };
             await _messageRepository.InsertAsync(message);
+            return message;
         }
     }
 }

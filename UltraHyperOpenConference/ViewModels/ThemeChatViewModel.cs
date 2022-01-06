@@ -7,11 +7,15 @@ namespace UltraHyperOpenConference.ViewModels
     {
         public Theme Theme { get; }
         public ThemeMessageTreeLeaf Chats { get; }
+        public int CurrentUserId { get; }
+        public bool IsUserBanned { get; set; }
+        public int UserBanTime { get; set; }
 
-        public ThemeChatViewModel(Theme theme, ThemeMessageTreeLeaf chats)
+        public ThemeChatViewModel(Theme theme, ThemeMessageTreeLeaf chats, int currentUserId)
         {
             Theme = theme;
             Chats = chats;
+            CurrentUserId = currentUserId;
         }
     }
 }

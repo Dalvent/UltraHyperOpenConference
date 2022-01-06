@@ -14,10 +14,18 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
         }
 
+        public async Task<MessageWithUserName> GetWithNameByIdAsync(int id)
+        {
+            return await DbSet
+                .Where(item => item.Id == id)
+                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<MessageWithUserName>> GetByThemeAsync(int themeId)
         {
             return await DbSet
-                .Where(message => message.ThemeId == themeId && !message.IsDeleted)
+                .Where(message => message.ThemeId == themeId)
                 .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
                 .ToListAsync();
         }
@@ -25,7 +33,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         public Task<List<MessageWithUserName>> GetAllByUserAsync(int userId)
         {
             return DbSet
-                .Where(item => item.UserAuthorId == userId && !item.IsDeleted)
+                .Where(item => item.UserAuthorId == userId)
                 .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
                 .ToListAsync();
         }
@@ -34,6 +42,14 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return DbSet
                 .Where(item => item.Text.Contains(value) && !item.IsDeleted)
+                .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
+                .ToListAsync();
+        }
+
+        public Task<List<MessageWithUserName>> GetAnswersAsync(int messageId)
+        {
+            return DbSet
+                .Where(item => item.ParentMessageId == messageId)
                 .Select(message => new MessageWithUserName(message.UserAuthor.Name, message))
                 .ToListAsync();
         }

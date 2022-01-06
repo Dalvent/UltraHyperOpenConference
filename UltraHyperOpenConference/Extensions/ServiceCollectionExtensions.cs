@@ -9,7 +9,7 @@ namespace UltraHyperOpenConference.Extensions
         public static void AddProjectRepositories(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IThemeRepository, ThemeRepository>();
-            serviceCollection.AddScoped<IBanUserCapabilityRepository, BanUserCapabilityRepository>();
+            serviceCollection.AddScoped<IBanUserRepository, BanUserRepository>();
             serviceCollection.AddScoped<IMessageRepository, MessageRepository>();
             serviceCollection.AddScoped<IUserRepository, UserRepository>();
         }
@@ -17,7 +17,7 @@ namespace UltraHyperOpenConference.Extensions
         public static void AddCoreServices(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddScoped<IUserAuthorisationService, UserAuthorisationService>();
-            serviceCollection.AddScoped<IBanUserCapabilityRepository, BanUserCapabilityRepository>();
+            serviceCollection.AddScoped<IBanUserRepository, BanUserRepository>();
             serviceCollection.AddScoped<IModerationService, ModerationService>();
             serviceCollection.AddScoped<ICurrentUserService, CurrentUserService>();
             serviceCollection.AddScoped<IConferenceService, ConferenceService>();

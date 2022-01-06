@@ -4,7 +4,7 @@
 @model UltraHyperOpenConference.ViewModels.ThemeChatViewModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = Model.Theme.Name;
     var error = TempData[HomeController.ErrorTempDataKey] as string;
 }
 
@@ -23,70 +23,127 @@
         {
             foreach (var messageLeaf in item)
             {
+                if (!messageLeaf.NeedToShow)
+                    continue;
+
                 <div class="media-block">
                     <div class="media-body">
 
                         <div class="mar-btm">
                             <div class="list-group-horizontal">
                                 <p class="mb-0 text-semibold media-heading box-inline">
-                                    <b>@messageLeaf.MessageWithAuthorName.UserName</b>
-                                    <a href="#"
+                                    @if (!messageLeaf.MessageWithAuthorName.Message.IsDeleted)
+                                    {
+                                        <b>@messageLeaf.MessageWithAuthorName.UserName</b>
+                                    }
+                                    else
+                                    {
+                                        <b></b>
+                                    }
+                                    <a asp-controller="Messages" asp-action="Index" asp-route-messageIndex="@messageLeaf.MessageWithAuthorName.Message.Id"
                                        class="float-right btn-link text-semibold media-heading box-inline">
                                         @messageLeaf.MessageWithAuthorName.Message.Id
                                     </a>
                                 </p>
                             </div>
                             <p class="text-muted text-sm d-inline">
-                                <i class="fa fa-mobile fa-lg"></i>@messageLeaf.MessageWithAuthorName.Message.CreationDate
+                                @messageLeaf.MessageWithAuthorName.Message.CreationDate
                             </p>
                         </div>
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (!messageLeaf.MessageWithAuthorName.Message.IsDeleted)
                         {
-                            <p>@messageLeaf.MessageWithAuthorName.Message.Text</p>
+                            <p class="m-2 message-text">@messageLeaf.MessageWithAuthorName.Message.Text</p>
+                            <div class="m-2 display-none message-edit-text-area">
+                                <div class="margin-top-sm clearfix">
+                                    <form asp-controller="Conference" method="POST">
+                                        <input type="hidden" name="messageId" value="@messageLeaf.MessageWithAuthorName.Message.Id"/>
+                                        <textarea name="messageNewText"></textarea>
 
-                            <div class="pad-ver">
-                                <a class="replay-message-button btn btn-primary btn-hover-primary" href="#">Comment</a>
-                                @if (User.IsInRole(Constants.ModerRole))
-                                {
-                                    <div class="float-right">
-                                        <a class="btn btn-danger btn-hover-primary" href="#">Remove</a>
-                                        <a class="btn btn-danger btn-hover-primary" href="#">Ban Author</a>
-                                    </div>
-                                }
-                            </div>
-                        }
-
-                        <hr>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <div class="display-none comment-block margin-bottom-md col-md-12 m bootstrap snippets">
-                                <div class="panel">
-                                    <div class="panel-body">
-                                        <textarea class="form-control" rows="2" placeholder="Your replay"></textarea>
                                         <div class="margin-top-sm clearfix">
-                                            <button class="btn btn-sm btn-primary pull-right" type="submit">
+                                            <button asp-action="EditComment" class="btn btn-sm btn-primary pull-right" type="submit">
                                                 <i
                                                     class="fa fa-pencil fa-fw">
                                                 </i> Send!
                                             </button>
-                                            <button class="comment-cancel-button btn btn-sm btn-outline-primary pull-right"
-                                                    type="submit">
+
+                                            <button class="cancel-edit-button btn btn-sm btn-outline-primary pull-right"
+                                                    type="button">
                                                 <i
                                                     class="fa fa-pencil fa-fw">
                                                 </i> Cancel
                                             </button>
                                         </div>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
                         }
-                        <!-- Comments -->
-                        <div class="inner-comments">
-                            @if (messageLeaf.Answers != null && messageLeaf.Answers.Count != 0)
+                        else
+                        {
+                            <p>
+                                <i>Message was deleted</i>
+                            </p>
+                        }
+
+                        @if (!messageLeaf.MessageWithAuthorName.Message.IsDeleted)
+                        {
+                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned)
                             {
-                                ShowTree(messageLeaf.Answers);
+                                <div class="pad-ver">
+                                    <a class="replay-message-button btn btn-primary btn-hover-primary" href="#">Comment</a>
+                                    <a class="edit-button btn btn-primary btn-hover-primary" href="#"><span class="glyphicon glyphicon-edit"></span> Edit</a>
+
+                                    @if (User.IsInRole(Constants.ModerRole))
+                                    {
+                                        <div class="moder-block float-right">
+                                            <form asp-action="RemoveMessage">
+                                                <input hidden="hidden" name="messageId" value="@messageLeaf.MessageWithAuthorName.Message.Id"/>
+                                                <button type="submit" class="btn btn-danger btn-hover-primary" href="#">
+                                                    Remove
+                                                </button>
+                                                <button type="button" class="ban-user-button btn btn-danger btn-hover-primary" href="#">Ban Author</button>
+                                            </form>
+                                            <input type="hidden" class="comment-user-id" value="@messageLeaf.MessageWithAuthorName.Message.UserAuthorId"/>
+                                        </div>
+                                    }
+                                </div>
                             }
-                        </div>
+
+                            <hr>
+                            @if (User.Identity?.IsAuthenticated == true && !Model.IsUserBanned)
+                            {
+                                <div class="display-none comment-block margin-bottom-md col-md-12 m bootstrap snippets">
+                                    <div class="panel">
+                                        <div class="panel-body">
+                                            <form asp-controller="Conference" method="POST">
+                                                <input name="parentId" value="@messageLeaf.MessageWithAuthorName.Message.Id" type="hidden"/>
+                                                <textarea name="messageText" class="form-control" rows="2" placeholder="Your replay"></textarea>
+                                                <div class="margin-top-sm clearfix">
+                                                    <button asp-action="AnswerTo" class="btn btn-sm btn-primary pull-right" type="submit">
+                                                        <i
+                                                            class="fa fa-pencil fa-fw">
+                                                        </i> Send!
+                                                    </button>
+
+                                                    <button class="comment-cancel-button btn btn-sm btn-outline-primary pull-right"
+                                                            type="submit">
+                                                        <i
+                                                            class="fa fa-pencil fa-fw">
+                                                        </i> Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        @if (messageLeaf.Answers != null && messageLeaf.Answers.Count != 0)
+                        {
+                            <!-- Comments -->
+                            <div class="pl-3 border-3 border-left border-secondary">
+                                @ShowTree(messageLeaf.Answers)
+                            </div>
+                        }
 
                     </div>
                 </div>
@@ -103,6 +160,49 @@
 
 <h1>@Model.Theme.Name</h1>
 
+@if (Model.IsUserBanned)
+{
+    <p class="text-danger">SIT IN BAN FOR ANOTHER @Model.UserBanTime HOURS</p>
+}
+
+
 <div class="panel">
-    @ShowTree(new List<ThemeMessageTreeLeaf>() { Model.Chats })
+    @if (Model.Chats?.NeedToShow == true)
+    {
+        @ShowTree(new List<ThemeMessageTreeLeaf>() { Model.Chats })
+    }
+    else
+    {
+        <p>All messages in conference was deleted!</p>
+    }
 </div>
+
+@if (User.IsInRole(Constants.ModerRole))
+{
+    <form>
+        <div id="banModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Hours to ban</p>
+                        <input type="number" name="banTime"/>
+                        <p>Reason</p>
+                        <input type="text" name="reasonText"/>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="hidden" name="userId" id="input-user-ban-id"/>
+                        <input type="hidden" name="redirectThemeId" value="@Model.Theme.Id"/>
+                        <button asp-action="BanUser" type="submit" class="btn btn-primary">Ban</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+}

@@ -26,7 +26,7 @@ namespace UltraHyperOpenConference.Services.Repositories
         {
             return await DbSet.Where(item => !item.IsActive).ToListAsync();
         }
-        
+
         public override Task<User> GetByIdAsync(int id)
         {
             return DbSet.FirstOrDefaultAsync(item => item.Id == id);

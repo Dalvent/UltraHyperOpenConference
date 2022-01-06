@@ -1,0 +1,108 @@
+﻿@using UltraHyperOpenConference.Controllers
+@using UltraHyperOpenConference.ViewModels
+@using Microsoft.AspNetCore.Html
+@model UltraHyperOpenConference.ViewModels.MessageDetailViewModel
+
+@{
+    ViewData["Title"] = $"Message - {Model.Message.Message.Id}";
+}
+
+@{
+    Func<(MessageWithUserName, bool), IHtmlContent> ShowMessage = null;
+}
+
+@{
+    ShowMessage = @<text>
+                      @{
+                          var message = item.Item1;
+                          var isMain = item.Item2;
+
+                          <div class="media-block">
+                              <div class="media-body">
+                                  <div class="mar-btm">
+                                      <div class="list-group-horizontal">
+                                          <p class="mb-0 text-semibold media-heading box-inline">
+                                              @if (!message.Message.IsDeleted)
+                                              {
+                                                  <b>@message.UserName</b>
+                                              }
+                                              else
+                                              {
+                                                  <b></b>
+                                              }
+                                              <a asp-controller="Messages" asp-action="Index" asp-route-messageIndex="@message.Message.Id"
+                                                 class="float-right btn-link text-semibold media-heading box-inline">
+                                                  @message.Message.Id
+                                              </a>
+                                          </p>
+                                      </div>
+                                      <p class="text-muted text-sm d-inline">
+                                          @message.Message.CreationDate
+                                      </p>
+                                  </div>
+                                  @if (!message.Message.IsDeleted)
+                                  {
+                                      <p>@message.Message.Text</p>
+                                  }
+                                  else
+                                  {
+                                      <p>
+                                          <i>Message was deleted</i>
+                                      </p>
+                                  }
+
+                                  @if (!message.Message.IsDeleted && isMain && User.IsInRole(Constants.ModerRole))
+                                  {
+                                      <div class="pad-ver">
+                                          <a class="replay-message-button btn btn-primary btn-hover-primary" href="#">Comment</a>
+                                          <div class="float-right">
+                                              <form asp-controller="Conference" asp-action="RemoveMessage">
+                                                  <input hidden="hidden" name="messageId" value="@message.Message.Id"/>
+                                                  <button type="submit" class="btn btn-danger btn-hover-primary" href="#">
+                                                      Remove
+                                                  </button>
+                                                  <a class="btn btn-danger btn-hover-primary" href="#">Ban Author</a>
+                                              </form>
+                                          </div>
+                                      </div>
+                                  }
+
+                                  <hr>
+
+                              </div>
+                          </div>
+                      }
+                   </text>;
+}
+
+<h2>Message:</h2>
+@ShowMessage((@Model.Message, true))
+
+<a asp-controller="Conference" asp-action="ThemeChat" asp-route-themeId="@Model.Message.Message.ThemeId">Open theme of message</a>
+
+@if (Model.ParentMessage != null)
+{
+    <h4>Answer to:</h4>
+    @ShowMessage((@Model.ParentMessage, false))
+    <hr>
+}
+else
+{
+    <div>Root of theme</div>
+}
+
+@if (Model.Answers == null || Model.Answers.Count == 0 || Model.Answers.All(item => item.Message.IsDeleted))
+{
+    <div>No answers</div>
+}
+else
+{
+    <h4>Answers:</h4>
+    foreach (var message in Model.Answers)
+    {
+        if (!message.Message.IsDeleted)
+        {
+            @ShowMessage((message, false))
+        }
+    }
+}

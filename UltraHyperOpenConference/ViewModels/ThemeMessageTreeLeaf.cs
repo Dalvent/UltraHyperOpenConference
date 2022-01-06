@@ -8,5 +8,6 @@ namespace UltraHyperOpenConference.ViewModels
     {
         public MessageWithUserName MessageWithAuthorName { get; set; } 
         public List<ThemeMessageTreeLeaf> Answers { get; set; }
+        public bool NeedToShow { get; set; }
     }
 }

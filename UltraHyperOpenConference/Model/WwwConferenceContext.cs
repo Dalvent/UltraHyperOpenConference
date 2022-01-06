@@ -17,11 +17,10 @@ namespace UltraHyperOpenConference.Model
         {
         }
 
-        public virtual DbSet<BanUserCapability> BanUserCapabilities { get; set; }
+        public virtual DbSet<BanUser> BanUsers { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Theme> Themes { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserCapability> UserCapabilities { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -36,9 +35,9 @@ namespace UltraHyperOpenConference.Model
         {
             modelBuilder.HasAnnotation("Relational:Collation", "Latin1_General_CI_AS");
 
-            modelBuilder.Entity<BanUserCapability>(entity =>
+            modelBuilder.Entity<BanUser>(entity =>
             {
-                entity.ToTable("BanUserCapability");
+                entity.ToTable("BanUser");
 
                 entity.Property(e => e.CreationDate).HasColumnType("datetime");
 
@@ -51,12 +50,6 @@ namespace UltraHyperOpenConference.Model
                     .HasForeignKey(d => d.ModeratorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_BanUserCapability_User1");
-
-                entity.HasOne(d => d.UserCapabilityNavigation)
-                    .WithMany(p => p.BanUserCapabilities)
-                    .HasForeignKey(d => d.UserCapability)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_BanUserCapability_UserCapability");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.BanUserCapabilityUsers)
@@ -113,13 +106,6 @@ namespace UltraHyperOpenConference.Model
                 entity.Property(e => e.Password)
                     .IsRequired()
                     .HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<UserCapability>(entity =>
-            {
-                entity.ToTable("UserCapability");
-
-                entity.Property(e => e.Name).HasMaxLength(50);
             });
 
             OnModelCreatingPartial(modelBuilder);

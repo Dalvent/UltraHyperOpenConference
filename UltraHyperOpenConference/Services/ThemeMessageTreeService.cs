@@ -16,7 +16,7 @@ namespace UltraHyperOpenConference.Services
         {
             _messageRepository = messageRepository;
         }
-        
+
         public async Task<ThemeMessageTreeLeaf> GetTreeAsync(int themeId)
         {
             var messagesGroupedByAnswer = (await _messageRepository.GetByThemeAsync(themeId))
@@ -25,9 +25,29 @@ namespace UltraHyperOpenConference.Services
                     item => item.Key ?? -1,
                     item => (IEnumerable<MessageWithUserName>)item
                 );
-            
+
             MessageWithUserName root = messagesGroupedByAnswer[-1].FirstOrDefault();
-            return CreateMessageTreeByAnswer(root, messagesGroupedByAnswer);
+            ThemeMessageTreeLeaf themeMessageTreeLeaf = CreateMessageTreeByAnswer(root, messagesGroupedByAnswer);
+
+            SetNeedToShow(themeMessageTreeLeaf);
+            
+            return themeMessageTreeLeaf;
+        }
+
+        private void SetNeedToShow(ThemeMessageTreeLeaf tree)
+        {
+            if (tree.Answers != null)
+            {
+                foreach (var message in tree.Answers)
+                {
+                    SetNeedToShow(message);
+                }
+                tree.NeedToShow = !tree.MessageWithAuthorName.Message.IsDeleted || tree.Answers.Any(ans => ans.NeedToShow);
+            }
+            else
+            {
+                tree.NeedToShow = !tree.MessageWithAuthorName.Message.IsDeleted;
+            }
         }
 
         private ThemeMessageTreeLeaf CreateMessageTreeByAnswer(MessageWithUserName root, Dictionary<int, IEnumerable<MessageWithUserName>> messagesGroupedByAnswer)
@@ -42,7 +62,7 @@ namespace UltraHyperOpenConference.Services
                     .Select(item => CreateMessageTreeByAnswer(item, messagesGroupedByAnswer))
                     .ToList();
             }
-            
+
             return themeMessageTreeLeaf;
         }
     }

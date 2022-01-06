@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using UltraHyperOpenConference.Enums;
 using UltraHyperOpenConference.Exceptions;
 using UltraHyperOpenConference.Model;
 using UltraHyperOpenConference.Services.Repositories;
@@ -12,17 +11,17 @@ namespace UltraHyperOpenConference.Services
     public class ModerationService : IModerationService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IBanUserCapabilityRepository _banUserCapabilityRepository;
+        private readonly IBanUserRepository _banUserRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMessageRepository _messageRepository;
 
         public ModerationService(IUserRepository userRepository,
-            IBanUserCapabilityRepository banUserCapabilityRepository,
+            IBanUserRepository banUserRepository,
             ICurrentUserService currentUserService,
             IMessageRepository messageRepository)
         {
             _userRepository = userRepository;
-            _banUserCapabilityRepository = banUserCapabilityRepository;
+            _banUserRepository = banUserRepository;
             _currentUserService = currentUserService;
             _messageRepository = messageRepository;
         }
@@ -36,30 +35,30 @@ namespace UltraHyperOpenConference.Services
             await _userRepository.UpdateAsync(user);
         }
 
-        public async Task BanUserAsync(UserCapabilityBanType capabilityBanType, int userId, TimeSpan duration, string reason)
+        public async Task BanUserAsync(int userId, int hours, string reason)
         {
             ThrowIfNotModer();
 
-            var ban = new BanUserCapability()
+            var ban = new BanUser()
             {
                 CreationDate = DateTime.Now,
-                Duration = duration.Seconds,
+                Duration = hours,
                 ModeratorId = _currentUserService.GetId(),
                 Reason = reason,
-                UserId = userId,
-                UserCapability = (int)capabilityBanType
+                UserId = userId
             };
             
-            await _banUserCapabilityRepository.InsertAsync(ban);
+            await _banUserRepository.InsertAsync(ban);
         }
 
-        public async Task DeleteMessageAsync(int messageId)
+        public async Task<Message> DeleteMessageAsync(int messageId)
         {
             ThrowIfNotModer();
 
             var message = await _messageRepository.GetByIdAsync(messageId);
             message.IsDeleted = true;
             await _messageRepository.UpdateAsync(message);
+            return message;
         }
 
         private void ThrowIfNotModer()

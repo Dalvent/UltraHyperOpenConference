@@ -9,8 +9,8 @@ namespace UltraHyperOpenConference.Model
     {
         public User()
         {
-            BanUserCapabilityModerators = new HashSet<BanUserCapability>();
-            BanUserCapabilityUsers = new HashSet<BanUserCapability>();
+            BanUserCapabilityModerators = new HashSet<BanUser>();
+            BanUserCapabilityUsers = new HashSet<BanUser>();
             Messages = new HashSet<Message>();
         }
 
@@ -20,8 +20,8 @@ namespace UltraHyperOpenConference.Model
         public bool IsModer { get; set; }
         public bool IsActive { get; set; }
 
-        public virtual ICollection<BanUserCapability> BanUserCapabilityModerators { get; set; }
-        public virtual ICollection<BanUserCapability> BanUserCapabilityUsers { get; set; }
+        public virtual ICollection<BanUser> BanUserCapabilityModerators { get; set; }
+        public virtual ICollection<BanUser> BanUserCapabilityUsers { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
     }
 }
