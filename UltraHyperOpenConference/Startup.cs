@@ -33,6 +33,11 @@ namespace UltraHyperOpenConference
 
         public void ConfigureServices(IServiceCollection services)
         {
+            using (var client = new WwwConferenceContext())
+            {
+                client.Database.EnsureCreated();
+            }
+            
             services.AddDbContext<WwwConferenceContext>(options =>
             {
                 string connectionString = Configuration.GetConnectionString("DefaultConnection");
