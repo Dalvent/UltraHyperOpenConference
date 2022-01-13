@@ -13,11 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Pages" />
-      <Folder Include="Trash" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="wwwroot\index.html" />
     </ItemGroup>
 
